@@ -70,6 +70,18 @@ MACRO_TO_DEST_CPU = {
 '__xtensa__'  : 'xtensa',
 }
 
+MACRO_TO_DEST_CPU_EXTS = {
+        '__ADX__' : 'adx',
+        '__AVX__' : 'avx',
+        '__AVX2__' : 'avx2',
+        '__POPCNT__' : 'popcnt',
+        '__SSE__' : 'sse',
+        '__SSE2__' : 'sse2',
+        '__SSE3__' : 'sse3',
+        '__SSE4_1__' : 'sse4_1',
+        '__SSE4_2__' : 'sse4_2'
+}
+
 @conf
 def parse_flags(self, line, uselib_store, env=None, force_static=False, posix=None):
 	"""
@@ -1008,7 +1020,7 @@ def get_cc_version(conf, cc, gcc=False, icc=False, clang=False):
 
 	:raise: :py:class:`waflib.Errors.ConfigurationError`
 	"""
-	cmd = cc + ['-dM', '-E', '-']
+	cmd = cc + ['-march=native', '-dM', '-E', '-']
 	env = conf.env.env or None
 	try:
 		out, err = conf.cmd_and_log(cmd, output=0, input='\n'.encode(), env=env)
@@ -1074,6 +1086,12 @@ def get_cc_version(conf, cc, gcc=False, icc=False, clang=False):
 			if isD(i):
 				conf.env.DEST_CPU = MACRO_TO_DEST_CPU[i]
 				break
+
+		conf.env.DEST_CPU_EXTS = set()
+		for i in MACRO_TO_DEST_CPU_EXTS:
+			if isD(i):
+				symbol = MACRO_TO_DEST_CPU_EXTS[i]
+				conf.env.DEST_CPU_EXTS.add(symbol);
 
 		Logs.debug('ccroot: dest platform: ' + ' '.join([conf.env[x] or '?' for x in ('DEST_OS', 'DEST_BINFMT', 'DEST_CPU')]))
 		if icc:
@@ -1349,4 +1367,3 @@ def check_gcc_o_space(self, mode='c'):
 		self.env.revert()
 	else:
 		self.env.commit()
-
